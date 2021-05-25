@@ -1,0 +1,131 @@
+<html lang="pt-BR">
+<head th:replace="~{base :: head}"></head>
+<body onload="onLoad()">
+<div th:replace="~{base :: logo}"></div>
+<div class="container" id="ordens-servico">
+    <div th:replace="~{base :: titulo('Iniciadas')}"></div>
+    <div class="card mb-3" v-for="ordem in ordens">
+        <div class="card-header alert-primary">{{ordem.nomeCliente}}</div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col">
+                    <div class="text-start">
+                        Peça: {{ordem.nomePeca}}
+                    </div>
+                </div>
+                <div class="col">
+                    <div class="text-start">
+                        Data de Cadastro: {{ordem.dataCadastro}}
+                    </div>
+
+                </div>
+            </div>
+            <div class="row mt-3">
+                <div class="col">
+                    <div class="text-start form-control">
+                        Tipo da Peça:   {{ordem.tipoPeca}}
+                    </div>
+                </div>
+                <div class="col">
+                    <div class="text-start form-control">
+                        Marca:  {{ordem.marcaPeca}}
+                    </div>
+                </div>
+            </div>
+            <label class="form-label mt-3">Descrição do problema:</label>
+            <div class="text-start form-control">
+                {{ordem.descricao}}
+            </div>
+            <div class="row">
+                <div class="mt-3 col">
+                    <label for="dataInicio" class="form-label">Data Início</label>
+                    <input id="dataInicio" type="datetime-local" disabled class="form-control" v-model="ordem.dataInicio"/>
+                </div>
+                <div class="mt-3 col">
+                    <label for="dataTermino" class="form-label">Data Término</label>
+                    <input id="dataTermino" type="datetime-local" class="form-control" v-model="ordem.dataTermino"
+                           v-bind:class="{'is-invalid':ordem.erros.dataTermino !==''}"/>
+                    <div v-if="ordem.erros.dataTermino" class="invalid-feedback">
+                        {{ordem.erros.dataTermino}}
+                    </div>
+                </div>
+            </div>
+            <div class="mt-3 col">
+                <label for="comentario" class="form-label">Comentário</label>
+                <textarea id="comentario" class="form-control" maxlength="500" placeholder="detalhes da execução da ordem de serviço"
+                          v-bind:class="{'is-invalid':ordem.erros.comentario !==''}" v-model="ordem.comentario"></textarea>
+                <div v-if="ordem.erros.comentario" class="invalid-feedback">
+                    {{ordem.erros.comentario}}
+                </div>
+            </div>
+            <div class="row justify-content-between">
+                <div class="col-10">
+                    <button v-if="ordem.finalizada" class="btn btn-success mt-4">Finalizada</button>
+                    <button v-else class="btn btn-primary mt-4" v-on:click="finalizaOrdemServico(ordem)">Finalizar</button>
+                </div>
+                <div class="col-2">
+                    <button v-if="ordem.deletada" class="btn btn-secondary mt-4">Deletada</button>
+                    <button v-else class="btn btn-danger mt-4" v-on:click="deletarOrdemServico(ordem)">Deletar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    function onLoad() {
+        var app = new Vue(
+            {
+                el: '#ordens-servico',
+                data: {
+                    ordens: []
+                },
+                mounted () {
+                    axios
+                        .get('http://localhost:8080/api/ordemservico/iniciada')
+                        .then(response => {
+                            response.data.forEach(ordem =>{
+                                ordem.finalizada = false;
+                                ordem.deletada = false;
+                                ordem.erros = {
+                                    dataTermino: '',
+                                    comentario: ''
+                                }
+                            })
+                            this.ordens = response.data
+                        })
+                },
+                methods: {
+                    finalizaOrdemServico: function (ordemServico) {
+                        ordemServico.erros = {
+                            dataTermino: '',
+                            comentario: ''
+                        };
+                        axios
+                            .post('http://localhost:8080/api/ordemservico/finalizar', {
+                                id: ordemServico.id,
+                                dataTermino: ordemServico.dataTermino,
+                                comentario: ordemServico.comentario
+                            })
+                            .then(response => ordemServico.finalizada = true)
+                            .catch(error => {
+                                error.response.data.errors.forEach(error => {
+                                    ordemServico.erros[error.field] = error.defaultMessage;
+                                })
+                            })
+                    },
+                    deletarOrdemServico: function (ordemServico) {
+                        axios
+                            .delete('http://localhost:8080/api/ordemservico/deletar/' + ordemServico.id)
+                            .then(response => ordemServico.deletada = true)
+                            .catch(error => {
+                                console.log(error)
+                            })
+                    }
+                }
+            });
+    }
+</script>
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+<script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+</body>
+</html>

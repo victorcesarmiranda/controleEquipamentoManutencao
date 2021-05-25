@@ -1,0 +1,95 @@
+<html lang="pt-BR">
+<head th:replace="~{base :: head}"></head>
+<body onload="onLoad()">
+<div th:replace="~{base :: logo}"></div>
+<div class="container" id="ordens-servico">
+    <div th:replace="~{base :: titulo('Finalizadas')}"></div>
+    <div class="card mb-3" v-for="ordem in ordens">
+        <div class="card-header alert-info">{{ordem.nomeCliente}}</div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col">
+                    <div class="text-start">
+                        Peça: {{ordem.nomePeca}}
+                    </div>
+                </div>
+                <div class="col">
+                    <div class="text-start ">
+                        Data de Cadastro: {{ordem.dataCadastro}}
+                    </div>
+
+                </div>
+            </div>
+            <div class="row mt-3">
+                <div class="col">
+                    <div class="text-start">
+                        Tipo da Peça:   {{ordem.tipoPeca}}
+                    </div>
+                </div>
+                <div class="col">
+                    <div class="text-start">
+                        Marca:  {{ordem.marcaPeca}}
+                    </div>
+                </div>
+            </div>
+            <label class="form-label mt-3">Descrição do problema:</label>
+            <div class="text-start form-control">
+                {{ordem.descricao}}
+            </div>
+            <div class="row">
+                <div class="mt-3 col">
+                    <label for="dataInicio" class="form-label">Data Início</label>
+                    <input id="dataInicio" type="datetime-local" disabled class="form-control" v-model="ordem.dataInicio"/>
+                </div>
+                <div class="mt-3 col">
+                    <label for="dataTermino" class="form-label">Data Término</label>
+                    <input id="dataTermino" type="datetime-local" disabled class="form-control" v-model="ordem.dataTermino"/>
+                </div>
+            </div>
+            <div class="mt-3 col">
+                <label class="form-label mt-3">Comentário</label>
+                <div class="text-start form-control">
+                    {{ordem.comentario}}
+                </div>
+            </div>
+
+            <button v-if="ordem.deletada" class="btn btn-secondary mt-4">Deletada</button>
+            <button v-else class="btn btn-danger mt-4" v-on:click="deletarOrdemServico(ordem)">Deletar</button>
+        </div>
+    </div>
+</div>
+<script>
+    function onLoad() {
+        var app = new Vue(
+            {
+                el: '#ordens-servico',
+                data: {
+                    ordens: []
+                },
+                mounted () {
+                    axios
+                        .get('http://localhost:8080/api/ordemservico/finalizada')
+                        .then(response => {
+                            response.data.forEach(ordem =>{
+                                ordem.deletada = false;
+                            })
+                            this.ordens = response.data
+                        })
+                },
+                methods: {
+                    deletarOrdemServico: function (ordemServico) {
+                        axios
+                            .delete('http://localhost:8080/api/ordemservico/deletar/' + ordemServico.id)
+                            .then(response => ordemServico.deletada = true)
+                            .catch(error => {
+                                console.log(error)
+                            })
+                    }
+                }
+            });
+    }
+</script>
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+<script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+</body>
+</html>

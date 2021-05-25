@@ -1,0 +1,139 @@
+<html lang="pt-BR">
+<head th:replace="~{base :: head}"></head>
+<body onload="onLoad()">
+    <div th:replace="~{base :: logo}"></div>
+    <div class="container" id="ordem-servico">
+        <div th:replace="~{base :: titulo('Ordem de Serviço')}"></div>
+
+        <div class="card">
+            <div class="card-body">
+                <div class="row align-items-center">
+                    <div class="mb-3 col">
+                        <label for="nome" class="form-label">Nome</label>
+                        <input id="nome" type="text" class="form-control" placeholder="nome completo do cliente"
+                               v-model="ordemServico.nome" v-bind:class="{'is-invalid':ordemServico.erros.nome !==''}"/>
+                        <div v-if="ordemServico.erros.nome" class="invalid-feedback">
+                            {{ordemServico.erros.nome}}
+                        </div>
+                    </div>
+                    <div class="mb-3 col">
+                        <label for="email" class="form-label">Email</label>
+                        <input id="email" type="email" class="form-control" placeholder="email do cliente"
+                               v-model="ordemServico.email" v-bind:class="{'is-invalid':ordemServico.erros.email !==''}"/>
+                        <div v-if="ordemServico.erros.email" class="invalid-feedback">
+                            {{ordemServico.erros.email}}
+                        </div>
+                    </div>
+                    <div class="mb-3 col">
+                        <label for="telefone" class="form-label">Telefone</label>
+                        <input id="telefone" type="tel" class="form-control" placeholder="(99) 99999-9999"
+                               pattern="(+[0-9]{2}+)[0-9]{5}-[0-9]{4}" v-model="ordemServico.telefone"/>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="mb-3">
+                        <label for="endereco" class="form-label">Endereço</label>
+                        <input id="endereco" type="text" class="form-control" placeholder="endereço do cliente"
+                               v-model="ordemServico.endereco"/>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="card">
+            <div class="card-body">
+                <div class="row align-items-center">
+                    <div class="mb-3 col">
+                        <label for="peca" class="form-label">Peça</label>
+                        <input id="peca" type="text" class="form-control" placeholder="nome da peça" v-model="ordemServico.peca"
+                               v-bind:class="{'is-invalid':ordemServico.erros.peca !==''}"/>
+                        <div v-if="ordemServico.erros.peca" class="invalid-feedback">
+                            {{ordemServico.erros.peca}}
+                        </div>
+                    </div>
+                    <div class="mb-3 col">
+                        <label for="tipo" class="form-label">Tipo da Peça</label>
+                        <input id="tipo" type="text" class="form-control" placeholder="tipo da peça" v-model="ordemServico.tipo"/>
+                    </div>
+                    <div class="mb-3 col">
+                        <label for="marca" class="form-label">Marca</label>
+                        <input id="marca" type="text" class="form-control" placeholder="marca da peça"
+                               v-model="ordemServico.marca"/>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="mb-3 col">
+                        <label for="descricao" class="form-label">Descrição</label>
+                        <textarea id="descricao" class="form-control" placeholder="descrição do problema da peça" maxlength="500"
+                                  v-model="ordemServico.descricao" v-bind:class="{'is-invalid':ordemServico.erros.descricao !==''}"></textarea>
+                        <div v-if="ordemServico.erros.descricao" class="invalid-feedback">
+                            {{ordemServico.erros.descricao}}
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="mb-3 col">
+                        <label for="dataInicio" class="form-label">Data Início</label>
+                        <input id="dataInicio" type="datetime-local" class="form-control" v-model="ordemServico.dataInicio"/>
+                    </div>
+                    <div class="mb-3 col">
+                        <label for="dataTermino" class="form-label">Data Término</label>
+                        <input id="dataTermino" type="datetime-local" class="form-control" v-model="ordemServico.dataTermino"/>
+                    </div>
+                </div>
+                <button v-if="ordemServico.cadastrada" class="btn btn-success mt-2">Cadastrada</button>
+                <button v-else class="btn btn-primary mt-2" v-on:click="cadastraOrdemServico(ordemServico)">Cadastrar</button>
+            </div>
+        </div>
+    </div>
+    <script>
+        function onLoad() {
+            var app = new Vue(
+                {
+                    el: '#ordem-servico',
+                    data: {
+                        ordemServico: {
+                            erros: {
+                                nome: '',
+                                email: '',
+                                peca: '',
+                                descricao: ''
+                            },
+                            cadastrada: false
+                        }
+                    },
+                    methods: {
+                        cadastraOrdemServico: function (ordemServico) {
+                            ordemServico.erros = {
+                                nome: '',
+                                email: '',
+                                peca: '',
+                                descricao: ''
+                            };
+                            axios
+                                .post('http://localhost:8080/api/ordemservico', {
+                                    nome: ordemServico.nome,
+                                    endereco: ordemServico.endereco,
+                                    telefone: ordemServico.telefone,
+                                    email: ordemServico.email,
+                                    peca: ordemServico.peca,
+                                    tipo: ordemServico.tipo,
+                                    marca: ordemServico.marca,
+                                    descricao: ordemServico.descricao,
+                                    dataInicio: ordemServico.dataInicio,
+                                    dataTermino: ordemServico.dataTermino
+                                })
+                                .then(response => ordemServico.cadastrada = true)
+                                .catch(error => {
+                                    error.response.data.errors.forEach(error => {
+                                        ordemServico.erros[error.field] = error.defaultMessage;
+                                    })
+                                })
+                        }
+                    }
+                });
+        }
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+</body>
+</html>
