@@ -4,7 +4,7 @@
     <div th:replace="~{base :: logo}"></div>
     <div class="container" id="ordens-servico">
         <div th:replace="~{base :: titulo('Pendentes')}"></div>
-        <div class="card mb-3" v-for="ordem in ordens">
+        <div class="card mb-3" v-for="ordem in ordens" :key="ordem.id">
             <div class="card-header alert-warning">{{ordem.nomeCliente}}</div>
             <div class="card-body">
                 <div class="row">
@@ -59,14 +59,47 @@
                               v-model="ordem.comentario"></textarea>
                 </div>
 
-                <div class="row justify-content-between">
-                    <div class="col-10">
+                <div class="d-grid gap-2 d-md-flex justify-content-between">
+                    <div>
                         <button v-if="ordem.iniciada" class="btn btn-success mt-4">Iniciada</button>
                         <button v-else class="btn btn-primary mt-4" v-on:click="iniciaOrdemServico(ordem)">Iniciar</button>
                     </div>
-                    <div class="col-2">
-                        <button v-if="ordem.deletada" class="btn btn-secondary mt-4">Deletada</button>
-                        <button v-else class="btn btn-danger mt-4" v-on:click="deletarOrdemServico(ordem)">Deletar</button>
+                    <div>
+                        <button type="button" class="btn btn-danger mt-4" data-bs-toggle="modal" data-bs-target="#confirmacaoDeleta">Deletar</button>
+                    </div>
+                    <div class="modal fade" id="formularioEditar" tabindex="-1" aria-labelledby="editarOdemServico" aria-hidden="true">
+                        <div class="modal-dialog modal-dialog-centered">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title" id="editarOdemServico">Editar Ordem de Serviço</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+                                </div>
+                                <div class="modal-body">
+                                    <p class="text-center text-wrap">Você tem certeza que deseja deletar esta Ordem de Serviço?</p>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+                                    <button class="btn btn-secondary" data-bs-dismiss="modal" v-on:click="editarOrdemServico(ordem)">Editar</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal fade" id="confirmacaoDeleta" tabindex="-1" aria-labelledby="deletarOdemServico" aria-hidden="true">
+                        <div class="modal-dialog modal-dialog-centered">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title" id="deletarOdemServico">Deletar Ordem de Serviço?</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+                                </div>
+                                <div class="modal-body">
+                                    <p class="text-center text-wrap">Você tem certeza que deseja deletar esta Ordem de Serviço?</p>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+                                    <button class="btn btn-danger" data-bs-dismiss="modal" v-on:click="deletarOrdemServico(ordem)">Deletar</button>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -86,7 +119,6 @@
                             .then(response => {
                                 response.data.forEach(ordem =>{
                                     ordem.iniciada = false;
-                                    ordem.deletada = false;
                                     ordem.erros = {
                                         dataInicio: ''
                                     }
@@ -108,15 +140,13 @@
                                 })
                                 .then(response => ordemServico.iniciada = true)
                                 .catch(error => {
-                                    error.response.data.errors.forEach(error => {
-                                        ordemServico.erros[error.field] = error.defaultMessage;
-                                    })
+                                    error.response.data.errors.forEach(error => ordemServico.erros[error.field] = error.defaultMessage)
                                 })
                         },
                         deletarOrdemServico: function (ordemServico) {
                             axios
                                 .delete('http://localhost:8080/api/ordemservico/deletar/' + ordemServico.id)
-                                .then(response => ordemServico.deletada = true)
+                                .then(response => this.ordens.splice(this.ordens.indexOf(ordemServico), 1))
                                 .catch(error => {
                                     console.log(error)
                                 })
@@ -125,7 +155,6 @@
                 });
         }
     </script>
-    <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
-    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+
 </body>
 </html>
