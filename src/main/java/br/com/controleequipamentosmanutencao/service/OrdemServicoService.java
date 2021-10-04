@@ -16,6 +16,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class OrdemServicoService {
@@ -128,5 +129,12 @@ public class OrdemServicoService {
         ordemServico.setComentario(requisicaoFinalizaOrdemServico.getComentario());
         ordemServico.setStatus(StatusOrdemServico.FINALIZADA);
         save(ordemServico);
+    }
+
+
+    public OrdemServico findOrdemServicoId(Long id) {
+        OrdemServico ordemServico = ordemServicoRepository.findById(id).orElseThrow();
+        ordemServico.setPeca(pecaService.findPecaById(ordemServico.getPeca().getId()));
+        return ordemServico;
     }
 }

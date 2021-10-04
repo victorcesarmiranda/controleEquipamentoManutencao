@@ -86,4 +86,15 @@ public class OrdemServicoRest {
         ordemServicoService.deleteById(id);
     }
 
+    @GetMapping("/peca/{id}")
+    public OrdensServicoResponse getOrdemServicoId(@PathVariable Long id) {
+        OrdemServico ordemServico = ordemServicoService.findOrdemServicoId(id);
+        return OrdensServicoResponse.builder()
+                .id(ordemServico.getId().toString())
+                .nomePeca(ordemServico.getPeca().getNome())
+                .marcaPeca(ordemServico.getPeca().getMarca())
+                .tipoPeca(ordemServico.getPeca().getTipo())
+                .build();
+    }
+
 }

@@ -4,18 +4,18 @@
     <div th:replace="~{base :: logo}"></div>
     <div class="container" id="ordens-servico">
         <div th:replace="~{base :: titulo('Pendentes')}"></div>
-        <div class="card mb-3" v-for="ordem in ordens" :key="ordem.id">
-            <div class="card-header alert-warning">{{ordem.nomeCliente}}</div>
+        <div class="card mb-3" v-for="ordemServico in ordensServico" :key="ordemServico.id">
+            <div class="card-header alert-warning">{{ordemServico.nomeCliente}}</div>
             <div class="card-body">
                 <div class="row">
                     <div class="col">
                         <div class="text-start">
-                            Peça: {{ordem.nomePeca}}
+                            Peça: {{ordemServico.nomePeca}}
                         </div>
                     </div>
                     <div class="col">
                         <div class="text-start ">
-                            Data de Cadastro: {{ordem.dataCadastro}}
+                            Data de Cadastro: {{ordemServico.dataCadastro}}
                         </div>
 
                     </div>
@@ -23,51 +23,52 @@
                 <div class="row mt-3">
                     <div class="col">
                         <div class="text-start">
-                            Tipo da Peça:   {{ordem.tipoPeca}}
+                            Tipo da Peça:   {{ordemServico.tipoPeca}}
                         </div>
                     </div>
                     <div class="col">
                         <div class="text-start">
-                            Marca:  {{ordem.marcaPeca}}
+                            Marca:  {{ordemServico.marcaPeca}}
                         </div>
                     </div>
                 </div>
                 <label class="form-label mt-3">Descrição do problema:</label>
                 <div class="text-start">
-                    {{ordem.descricao}}
+                    {{ordemServico.descricao}}
                 </div>
                 <div class="row">
                     <div class="mt-3 col">
-                        <label for="dataInicio" class="form-label">Data Início</label>
-                        <input id="dataInicio" type="datetime-local" class="form-control" v-model="ordem.dataInicio"
-                               v-bind:class="{'is-invalid':ordem.erros.dataInicio !==''}"/>
-                        <div v-if="ordem.erros.dataInicio" class="invalid-feedback">
-                            {{ordem.erros.dataInicio}}
+                        <label class="form-label">Data Início</label>
+                        <input type="datetime-local" class="form-control" v-model="ordemServico.dataInicio"
+                               v-bind:class="{'is-invalid':ordemServico.erros.dataInicio !==''}"/>
+                        <div v-if="ordemServico.erros.dataInicio" class="invalid-feedback">
+                            {{ordemServico.erros.dataInicio}}
                         </div>
                     </div>
                     <div class="mt-3 col">
-                        <label for="dataTermino" class="form-label">Data Término</label>
-                        <input id="dataTermino" type="datetime-local" class="form-control"
-                               v-model="ordem.dataTermino"/>
+                        <label class="form-label">Data Término</label>
+                        <input type="datetime-local" class="form-control"
+                               v-model="ordemServico.dataTermino"/>
                     </div>
                 </div>
                 <div class="mt-3 col">
-                    <label for="comentario" class="form-label">Comentário</label>
-                    <textarea id="comentario" class="form-control"
+                    <label class="form-label">Comentário</label>
+                    <textarea class="form-control"
                               placeholder="detalhes da execução da ordem de serviço"
                               maxlength="500"
-                              v-model="ordem.comentario"></textarea>
+                              v-model="ordemServico.comentario"></textarea>
                 </div>
 
                 <div class="d-grid gap-2 d-md-flex justify-content-between">
                     <div>
-                        <button v-if="ordem.iniciada" class="btn btn-success mt-4">Iniciada</button>
-                        <button v-else class="btn btn-primary mt-4" v-on:click="iniciaOrdemServico(ordem)">Iniciar</button>
+                        <button v-if="ordemServico.iniciada" class="btn btn-success mt-4">Iniciada</button>
+                        <button v-else class="btn btn-primary mt-4" v-on:click="iniciaOrdemServico(ordemServico)">Iniciar</button>
                     </div>
                     <div>
-                        <button type="button" class="btn btn-danger mt-4" data-bs-toggle="modal" data-bs-target="#confirmacaoDeleta">Deletar</button>
+                        <button type="button" class="btn btn-warning mt-4 me-3" id="editarButton" v-on:click="buscaInformacaoPeca(ordemServico)">Editar</button>
+                        <button type="button" class="btn btn-danger mt-4" data-bs-toggle="modal" data-bs-whatever="ordemServico.id" data-bs-target="#confirmacaoDeleta">Deletar</button>
                     </div>
-                    <div class="modal fade" id="formularioEditar" tabindex="-1" aria-labelledby="editarOdemServico" aria-hidden="true">
+                    <div class="modal fade" id="formularioEditar" role="dialog">
                         <div class="modal-dialog modal-dialog-centered">
                             <div class="modal-content">
                                 <div class="modal-header">
@@ -75,11 +76,53 @@
                                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
                                 </div>
                                 <div class="modal-body">
-                                    <p class="text-center text-wrap">Você tem certeza que deseja deletar esta Ordem de Serviço?</p>
+                                    <div class="card" id="ordemServicoParaEditar">
+                                        <div class="card-body">
+                                            <div class="row align-items-center">
+                                                <div class="mb-3 col">
+                                                    <label for="peca" class="form-label">Peça</label>
+                                                    <input id="peca" type="text" class="form-control" placeholder="nome da peça" v-model="ordemServico.peca"
+                                                           v-bind:class="{'is-invalid':ordemServico.erros.peca !==''}"/>
+                                                    <div v-if="ordemServico.erros.peca" class="invalid-feedback">
+                                                        {{ordemServico.erros.peca}}
+                                                    </div>
+                                                </div>
+                                                <div class="mb-3 col">
+                                                    <label for="tipo" class="form-label">Tipo da Peça</label>
+                                                    <input id="tipo" type="text" class="form-control" placeholder="tipo da peça" v-model="ordemServico.tipo"/>
+                                                </div>
+                                                <div class="mb-3 col">
+                                                    <label for="marca" class="form-label">Marca</label>
+                                                    <input id="marca" type="text" class="form-control" placeholder="marca da peça"
+                                                           v-model="ordemServico.marca"/>
+                                                </div>
+                                            </div>
+                                            <div class="row">
+                                                <div class="mb-3 col">
+                                                    <label for="descricao" class="form-label">Descrição</label>
+                                                    <textarea id="descricao" class="form-control" placeholder="descrição do problema da peça" maxlength="500"
+                                                              v-model="ordemServico.descricao" v-bind:class="{'is-invalid':ordemServico.erros.descricao !==''}"></textarea>
+                                                    <div v-if="ordemServico.erros.descricao" class="invalid-feedback">
+                                                        {{ordemServico.erros.descricao}}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="row">
+                                                <div class="mb-3 col">
+                                                    <label for="dataInicio" class="form-label">Data Início</label>
+                                                    <input id="dataInicio" type="datetime-local" class="form-control" v-model="ordemServico.dataInicio"/>
+                                                </div>
+                                                <div class="mb-3 col">
+                                                    <label for="dataTermino" class="form-label">Data Término</label>
+                                                    <input id="dataTermino" type="datetime-local" class="form-control" v-model="ordemServico.dataTermino"/>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
                                 <div class="modal-footer">
                                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
-                                    <button class="btn btn-secondary" data-bs-dismiss="modal" v-on:click="editarOrdemServico(ordem)">Editar</button>
+                                    <button class="btn btn-warning" data-bs-dismiss="modal" v-on:click="editarOrdemServico(ordemServico)">Editar</button>
                                 </div>
                             </div>
                         </div>
@@ -96,7 +139,7 @@
                                 </div>
                                 <div class="modal-footer">
                                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
-                                    <button class="btn btn-danger" data-bs-dismiss="modal" v-on:click="deletarOrdemServico(ordem)">Deletar</button>
+                                    <button class="btn btn-danger" data-bs-dismiss="modal" v-on:click="deletarOrdemServico(ordemServico)">Deletar</button>
                                 </div>
                             </div>
                         </div>
@@ -111,19 +154,20 @@
                 {
                     el: '#ordens-servico',
                     data: {
-                        ordens: []
+                        ordensServico: [],
+                        ordemServicoParaEditar: []
                     },
                     mounted () {
                         axios
                             .get('http://localhost:8080/api/ordemservico/pendente')
                             .then(response => {
-                                response.data.forEach(ordem =>{
-                                    ordem.iniciada = false;
-                                    ordem.erros = {
+                                response.data.forEach(ordemServico =>{
+                                    ordemServico.iniciada = false;
+                                    ordemServico.erros = {
                                         dataInicio: ''
                                     }
                                 })
-                                this.ordens = response.data
+                                this.ordensServico = response.data
                             })
                     },
                     methods: {
@@ -146,7 +190,15 @@
                         deletarOrdemServico: function (ordemServico) {
                             axios
                                 .delete('http://localhost:8080/api/ordemservico/deletar/' + ordemServico.id)
-                                .then(response => this.ordens.splice(this.ordens.indexOf(ordemServico), 1))
+                                .then(response => this.ordensServico.splice(this.ordensServico.indexOf(ordemServico), 1))
+                                .catch(error => {
+                                    console.log(error)
+                                })
+                        },
+                        buscaInformacaoPeca: function (ordemServico) {
+                            axios
+                                .get('http://localhost:8080/api/ordemservico/peca/' + ordemServico.id)
+                                .then(response => this.ordemServicoParaEditar = response.data)
                                 .catch(error => {
                                     console.log(error)
                                 })
@@ -154,6 +206,14 @@
                     }
                 });
         }
+        $(document).ready(function(){
+            $("#editarButton").click(function(){
+                $("#formularioEditar").modal("show");
+            });
+            $("#formularioEditar").on('show.bs.modal', function(){
+                alert('The modal is about to be shown.');
+            });
+        });
     </script>
 
 </body>
